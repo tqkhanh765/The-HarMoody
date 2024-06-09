@@ -2,11 +2,15 @@ package HarMoody;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+
+import static HarMoody.ButtonAction.addPlaybackButtonsAction;
+import static HarMoody.ButtonAction.addSliderAction;
 
 public class TheHarMoodyGUI {
     static JFrame frame;
@@ -34,12 +38,14 @@ public class TheHarMoodyGUI {
     static JLabel songTitle;
     static JLabel songArtist;
     static JLabel songStart;
+    static JLabel songLength;
+
+
     public TheHarMoodyGUI() {
-        musicPlayer = new MusicPlayer();
+        musicPlayer = new MusicPlayer(this);
         createMainGUI();
         addEmoButtonsAndLabels();
-        addBackButton();
-        ButtonAction.addPlaybackButtonsAction();
+        //addBackButton();
     }
     private void createMainGUI (){
         //frame
@@ -76,15 +82,15 @@ public class TheHarMoodyGUI {
 
 
         jFileChooser = new JFileChooser();
-        jFileChooser.setCurrentDirectory(new File("src/Assets"));
-
+        jFileChooser.setCurrentDirectory(new File("src/HarMoody"));
+        jFileChooser.setFileFilter(new FileNameExtensionFilter("MP3","mp3"));
     }
     private void addMusicPlayerGUI(){
 
     }
     public static void addEmoButtonsAndLabels(){
         //happy button
-        happy = new JButton(loadImage("src/HarMoody/Images/happy.png"));
+        happy = new JButton(LoadImage.loadImage("src/HarMoody/Images/happy.png"));
         happy.setBorderPainted(false);
         happy.setBackground(null);
         happy.setBounds(150, 200, 90, 90);
@@ -93,7 +99,7 @@ public class TheHarMoodyGUI {
         panel.add(happy);
 
         //sad button
-        sad = new JButton(loadImage("src/HarMoody/Images/sad.png"));
+        sad = new JButton(LoadImage.loadImage("src/HarMoody/Images/sad.png"));
         sad.setBorderPainted(false);
         sad.setBackground(null);
         sad.setBounds(360, 200, 90, 90);
@@ -102,7 +108,7 @@ public class TheHarMoodyGUI {
         panel.add(sad);
 
         //calm button
-        calm = new JButton(loadImage("src/HarMoody/Images/calm.png"));
+        calm = new JButton(LoadImage.loadImage("src/HarMoody/Images/calm.png"));
         calm.setBorderPainted(false);
         calm.setBackground(null);
         calm.setBounds(150, 350, 90, 90);
@@ -111,7 +117,7 @@ public class TheHarMoodyGUI {
         panel.add(calm);
 
         //energetic button
-        ener = new JButton(loadImage("src/HarMoody/Images/energetic.png"));
+        ener = new JButton(LoadImage.loadImage("src/HarMoody/Images/energetic.png"));
         ener.setBorderPainted(false);
         ener.setBackground(null);
         ener.setBounds(360, 350, 90, 90);
@@ -155,7 +161,7 @@ public class TheHarMoodyGUI {
     }
 
     public static void addBackButton(){
-        back = new JButton(loadImage("src/HarMoody/Images/Back resized 2.png"));
+        back = new JButton(LoadImage.loadImage("src/HarMoody/Images/Back resized 2.png"));
         back.setBorderPainted(false);
         back.setBackground(null);
         back.setBounds(10, 10, 53, 53);
@@ -173,6 +179,8 @@ public class TheHarMoodyGUI {
         playbackSlider.setBackground(null);
         panel.add(playbackSlider);
 
+        ButtonAction.addSliderAction();
+
         //song start time
         songStart = new JLabel("0:00");
         songStart.setBounds(55,420,40,40);
@@ -181,20 +189,29 @@ public class TheHarMoodyGUI {
         songStart.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(songStart);
 
+        //song length time
+        songLength = new JLabel("0:00");
+        songLength.setBounds(500,420,40,40);
+        songLength.setFont(new Font("Cambria",Font.BOLD,15));
+        songLength.setVerticalAlignment(SwingConstants.CENTER);
+        songLength.setHorizontalAlignment(SwingConstants.CENTER);
+        panel.add(songLength);
+
         //panel
         playbackButtons = new JPanel();
         playbackButtons.setBounds(100,455,400,80);
         playbackButtons.setBackground(null);
+        playbackButtons.setLayout(new FlowLayout());
         panel.add(playbackButtons);
 
         //prev button
-        prevButton = new JButton(loadImage("src/HarMoody/Images/prev 2.png"));
+        prevButton = new JButton(LoadImage.loadImage("src/HarMoody/Images/prev 2.png"));
         prevButton.setBorderPainted(false);
         prevButton.setBackground(null);
         playbackButtons.add(prevButton);
 
         //play button
-        playButton = new JButton(loadImage("src/HarMoody/Images/play 2.png"));
+        playButton = new JButton(LoadImage.loadImage("src/HarMoody/Images/play 2.png"));
         playButton.setBorderPainted(false);
         playButton.setBackground(null);
         playButton.setVisible(false);
@@ -202,16 +219,18 @@ public class TheHarMoodyGUI {
 
 
         //pause button
-        pauseButton = new JButton(loadImage("src/HarMoody/Images/pause 3.png"));
+        pauseButton = new JButton(LoadImage.loadImage("src/HarMoody/Images/pause 3.png"));
         pauseButton.setBorderPainted(false);
         pauseButton.setBackground(null);
         playbackButtons.add(pauseButton);
 
         //next button
-        nextButton = new JButton(loadImage("src/HarMoody/Images/next 2.png"));
+        nextButton = new JButton(LoadImage.loadImage("src/HarMoody/Images/next 2.png"));
         nextButton.setBorderPainted(false);
         nextButton.setBackground(null);
         playbackButtons.add(nextButton);
+
+        ButtonAction.addPlaybackButtonsAction();
 
         //song image
         songImage = new JLabel();
@@ -236,15 +255,7 @@ public class TheHarMoodyGUI {
         songArtist.setVerticalAlignment(SwingConstants.CENTER);
         panel.add(songArtist);
     }
-
-    public static ImageIcon loadImage(String imagePath) {
-        try {
-            BufferedImage image = ImageIO.read(new File(imagePath));
-            return new ImageIcon(image);
-        } catch(Exception e){
-            System.out.println("Error loading image: " + imagePath);
-            e.printStackTrace();
-        }
-        return null;
+    public static void setPlaybackSliderValue(int frame){
+        playbackSlider.setValue(frame);
     }
 }

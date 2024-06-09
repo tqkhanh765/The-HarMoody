@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SongLoader {
+public class SongLoader{
     public static List<Song> loadSongsFromFolder(String folderPath) {
         List<Song> songs = new ArrayList<>();
         File folder = new File(folderPath);

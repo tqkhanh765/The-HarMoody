@@ -4,26 +4,46 @@ import javazoom.jl.player.advanced.AdvancedPlayer;
 import javazoom.jl.player.advanced.PlaybackEvent;
 import javazoom.jl.player.advanced.PlaybackListener;
 
+import javax.swing.*;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class MusicPlayer extends PlaybackListener {
+    private TheHarMoodyGUI theHarMoodyGUI;
+    private static final Object playSignal = new Object();
     private Song currentSong;
     private AdvancedPlayer advancedPlayer;
-    private boolean isPlaying;
     private boolean isPaused;
+    private int currentFrame;
+    private int currentSongIndex = -1;
+    private int currentTimeInMilli;
+    private ScheduledExecutorService executor;
     private Thread musicThread;
-    private long pausedFrame;
-    public MusicPlayer(){
-
+    private long pausedPosition;
+    private int currentPlaylistIndex;
+    private List<Song> playlist;
+    private Set<String> playedSongs = new HashSet<>();
+    public MusicPlayer(TheHarMoodyGUI theHarMoodyGUI){
+        this.theHarMoodyGUI = theHarMoodyGUI;
     }
+
     public void loadSong(Song song){
         currentSong = song;
+        playlist = ButtonAction.getCurrentlist();
         if (currentSong != null) {
+            updatePlaybackSlider(currentSong);
             playCurrentSong();
         }
     }
     public void playCurrentSong(){
+        if (currentSong == null) return;
         try {
             FileInputStream fileInputStream = new FileInputStream(currentSong.getFilePath());
             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
@@ -32,6 +52,8 @@ public class MusicPlayer extends PlaybackListener {
             advancedPlayer.setPlayBackListener(this);
 
             startMusicThread();
+
+            startPlaybackSliderThread();
         } catch(Exception e){
             e.printStackTrace();
         }
@@ -41,36 +63,43 @@ public class MusicPlayer extends PlaybackListener {
             @Override
             public void run() {
                 try {
-                    advancedPlayer.play();
+                    if (isPaused){
+                        synchronized (playSignal) {
+                            isPaused = false;
+
+                            playSignal.notify();
+                        }
+                        advancedPlayer.play(currentFrame, Integer.MAX_VALUE);
+                    } else {
+                        advancedPlayer.play();
+                    }
                 } catch(Exception e){
                     e.printStackTrace();
                 }
             }
         }).start();
     }
-    public void pauseSong() {
-        if (advancedPlayer!= null && isPlaying) {
-            try {
-                pausedFrame = advancedPlayer.getPosition();
-                advancedPlayer.pause();
-                isPlaying = false;
-                isPaused = true;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+    @Override
+    public void playbackStarted(PlaybackEvent evt) {
+        System.out.println("Playback Started");
     }
 
-    public void resumeSong() {
-        if (advancedPlayer!= null && isPaused) {
-            try {
-                advancedPlayer.seek(pausedFrame);
-                advancedPlayer.play();
-                isPlaying = true;
-                isPaused = false;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    @Override
+    public void playbackFinished(PlaybackEvent evt) {
+        System.out.println("Playback Finished");
+        System.out.println("Actual stop" + evt.getFrame());
+
+        if (isPaused) {
+            currentFrame += (int) ((double)evt.getFrame() * currentSong.getFrameRatePerMilliseconds());
+        }
+        //else {
+            //nextSong("src/HarMoody/Happy songs");
+        //}
+    }
+    public void pauseSong() {
+        if (advancedPlayer != null) {
+            isPaused = true;
+            stopSong();
         }
     }
 
@@ -80,21 +109,101 @@ public class MusicPlayer extends PlaybackListener {
             advancedPlayer.close();
             advancedPlayer = null;
         }
-        if (musicThread != null) {
-            musicThread.interrupt();
-            musicThread = null;
+    }
+    private void playSong(Song songFile) {
+        currentSong = new Song(songFile.getFilePath(), songFile.getImagePath());
+        currentTimeInMilli = 0;
+        isPaused = false;
+        startPlaybackSliderThread();
+        //loadSong(currentSong);
+    }
+    public void nextSong(){
+        if (playlist == null) return;
+
+        if (currentPlaylistIndex + 1 > playlist.size() - 1) return;
+
+        stopSong();
+
+        currentPlaylistIndex++;
+        currentSong = playlist.get(currentPlaylistIndex);
+        currentFrame = 0;
+        currentTimeInMilli = 0;
+
+        updateSongInformation(currentSong);
+        updatePlaybackSlider(currentSong);
+
+        playCurrentSong();
+
+
+    }
+
+    public void prevSong(){
+        if (playlist == null) return;
+
+        if (currentPlaylistIndex - 1 < 0) return;
+
+        stopSong();
+
+        currentPlaylistIndex--;
+        currentSong = playlist.get(currentPlaylistIndex);
+        currentFrame = 0;
+        currentTimeInMilli = 0;
+
+        updateSongInformation(currentSong);
+        updatePlaybackSlider(currentSong);
+
+        playCurrentSong();
+
+
+    }
+    public void updatePlaybackSlider(Song song){
+        TheHarMoodyGUI.playbackSlider.setMaximum(song.getMp3File().getFrameCount());
+        TheHarMoodyGUI.playbackSlider.setValue(0);
+        System.out.println("Max value: " + TheHarMoodyGUI.playbackSlider.getMaximum());
+    }
+    private void startPlaybackSliderThread(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (isPaused) {
+                    try{
+                        synchronized (playSignal) {
+                            playSignal.wait();
+                        }
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+                while (!isPaused) {
+                    try {
+                        currentTimeInMilli++;
+                        int calculatedFrame = (int) ((double) currentTimeInMilli * 1.4 * currentSong.getFrameRatePerMilliseconds());
+                        theHarMoodyGUI.setPlaybackSliderValue(calculatedFrame);
+                        Thread.sleep(1);
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
+    public static void updateSongInformation(Song song){
+        TheHarMoodyGUI.songTitle.setText(song.getSongTitle());
+        TheHarMoodyGUI.songArtist.setText(song.getSongArtist());
+        TheHarMoodyGUI.songLength.setText(song.getSongLength());
+        if (song.getImagePath() != null) {
+            TheHarMoodyGUI.songImage.setIcon(LoadImage.loadSongImage(song.getImagePath()));
+        } else {
+            TheHarMoodyGUI.songImage.setIcon(LoadImage.loadSongImage("src/HarMoody/Images/record.png")); // Use a default image if no specific image is found
         }
     }
-
-    @Override
-    public void playbackStarted(PlaybackEvent evt) {
-        System.out.println("Playback Started");
+    public void setCurrentFrame(int frame) {
+        currentFrame = frame;
     }
-
-    @Override
-    public void playbackFinished(PlaybackEvent evt) {
-        System.out.println("Playback Finished");
+    public void setCurrentTimeInMilli(int timeInMilli){
+        currentTimeInMilli = timeInMilli;
     }
-
-
+    public Song getCurrentSong(){
+        return currentSong;
+    }
 }

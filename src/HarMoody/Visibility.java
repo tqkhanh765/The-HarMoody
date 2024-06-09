@@ -43,6 +43,7 @@ public class Visibility extends TheHarMoodyGUI{
         songArtist.setVisible(false);
         songTitle.setVisible(false);
         songImage.setVisible(false);
+        songLength.setVisible(false);
         songStart.setVisible(false);
     }
 
