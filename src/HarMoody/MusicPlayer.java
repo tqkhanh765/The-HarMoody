@@ -21,12 +21,11 @@ public class MusicPlayer extends PlaybackListener {
     private Song currentSong;
     private AdvancedPlayer advancedPlayer;
     private boolean isPaused;
+    private boolean songFinished;
+    private boolean pressedNext, pressedPrev;
+    private volatile boolean stopSliderThread = false;
     private int currentFrame;
-    private int currentSongIndex = -1;
     private int currentTimeInMilli;
-    private ScheduledExecutorService executor;
-    private Thread musicThread;
-    private long pausedPosition;
     private int currentPlaylistIndex;
     private List<Song> playlist;
     private Set<String> playedSongs = new HashSet<>();
@@ -82,6 +81,9 @@ public class MusicPlayer extends PlaybackListener {
     @Override
     public void playbackStarted(PlaybackEvent evt) {
         System.out.println("Playback Started");
+        songFinished = false;
+        pressedNext = false;
+        pressedPrev = false;
     }
 
     @Override
@@ -91,10 +93,21 @@ public class MusicPlayer extends PlaybackListener {
 
         if (isPaused) {
             currentFrame += (int) ((double)evt.getFrame() * currentSong.getFrameRatePerMilliseconds());
+        } else {
+            if (pressedNext || pressedPrev) return;
+            songFinished = true;
+            if (playlist == null) {
+                theHarMoodyGUI.playButton.setVisible(true);
+                theHarMoodyGUI.pauseButton.setVisible(false);
+            } else {
+                if (currentPlaylistIndex == playlist.size() - 1){
+                    theHarMoodyGUI.playButton.setVisible(true);
+                    theHarMoodyGUI.pauseButton.setVisible(false);
+                } else {
+                    nextSong();
+                }
+            }
         }
-        //else {
-            //nextSong("src/HarMoody/Happy songs");
-        //}
     }
     public void pauseSong() {
         if (advancedPlayer != null) {
@@ -122,8 +135,11 @@ public class MusicPlayer extends PlaybackListener {
 
         if (currentPlaylistIndex + 1 > playlist.size() - 1) return;
 
-        stopSong();
+        pressedNext = true;
 
+        if (!songFinished) {
+            stopSong();
+        }
         currentPlaylistIndex++;
         currentSong = playlist.get(currentPlaylistIndex);
         currentFrame = 0;
@@ -141,6 +157,8 @@ public class MusicPlayer extends PlaybackListener {
         if (playlist == null) return;
 
         if (currentPlaylistIndex - 1 < 0) return;
+
+        pressedPrev = true;
 
         stopSong();
 
@@ -161,6 +179,12 @@ public class MusicPlayer extends PlaybackListener {
         TheHarMoodyGUI.playbackSlider.setValue(0);
         System.out.println("Max value: " + TheHarMoodyGUI.playbackSlider.getMaximum());
     }
+    public void resetPlaybackSlider(){
+        currentFrame = 0;
+        currentTimeInMilli = 0;
+        TheHarMoodyGUI.playbackSlider.setValue(0);
+        songFinished = false;
+    }
     private void startPlaybackSliderThread(){
         new Thread(new Runnable() {
             @Override
@@ -174,7 +198,10 @@ public class MusicPlayer extends PlaybackListener {
                         e.printStackTrace();
                     }
                 }
-                while (!isPaused) {
+                System.out.println("songFinished = " + songFinished);
+                System.out.println("pressedNext = " + pressedNext);
+                System.out.println("pressedPrev = " + pressedPrev);
+                while (!isPaused && !songFinished && !pressedNext && !pressedPrev) {
                     try {
                         currentTimeInMilli++;
                         int calculatedFrame = (int) ((double) currentTimeInMilli * 1.4 * currentSong.getFrameRatePerMilliseconds());

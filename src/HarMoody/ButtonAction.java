@@ -20,13 +20,14 @@ public class ButtonAction extends TheHarMoodyGUI{
 
                 Visibility.removeMainComponents();
                 Visibility.removeEmoComponents();
+                back.setVisible(true);
                 addComponents();
 
 
                 List<Song> happySongs = SongLoader.loadSongsFromFolder("src/HarMoody/Happy songs");
-                PlaylistManager songList = new PlaylistManager(happySongs);
-                songList.shufflePlaylist();
-                currentList = songList.getPlaylist();
+                PlaylistManager happyList = new PlaylistManager(happySongs);
+                happyList.shufflePlaylist();
+                currentList = happyList.getPlaylist();
 
                 Song playingSong = currentList.get(0);
                 if (playingSong != null) {
@@ -39,51 +40,70 @@ public class ButtonAction extends TheHarMoodyGUI{
             @Override
             public void actionPerformed(ActionEvent e) {
                 panel.setBackground(new Color(51,153,255));
-                addBackButton();
-                ques.setVisible(false);
-                title.setVisible(false);
-                happy.setVisible(false);
-                sad.setVisible(false);
-                calm.setVisible(false);
-                ener.setVisible(false);
-                happyLabel.setVisible(false);
-                sadLabel.setVisible(false);
-                calmLabel.setVisible(false);
-                enerLabel.setVisible(false);
+
+                Visibility.removeMainComponents();
+                Visibility.removeEmoComponents();
+                back.setVisible(true);
+                addComponents();
+
+
+                List<Song> sadSongs = SongLoader.loadSongsFromFolder("src/HarMoody/Sad songs");
+                PlaylistManager sadList = new PlaylistManager(sadSongs);
+                sadList.shufflePlaylist();
+                currentList = sadList.getPlaylist();
+
+                Song playingSong = currentList.get(0);
+                if (playingSong != null) {
+                    musicPlayer.loadSong(playingSong);
+                    musicPlayer.updateSongInformation(playingSong);
+                }
             }
         });
         calm.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 panel.setBackground(new Color(204,204,204));
-                addBackButton();
-                ques.setVisible(false);
-                title.setVisible(false);
-                happy.setVisible(false);
-                sad.setVisible(false);
-                calm.setVisible(false);
-                ener.setVisible(false);
-                happyLabel.setVisible(false);
-                sadLabel.setVisible(false);
-                calmLabel.setVisible(false);
-                enerLabel.setVisible(false);
+
+                Visibility.removeMainComponents();
+                Visibility.removeEmoComponents();
+                back.setVisible(true);
+                addComponents();
+
+
+                List<Song> calmSongs = SongLoader.loadSongsFromFolder("src/HarMoody/Calm songs");
+                PlaylistManager calmList = new PlaylistManager(calmSongs);
+                calmList.shufflePlaylist();
+                currentList = calmList.getPlaylist();
+
+                Song playingSong = currentList.get(0);
+                if (playingSong != null) {
+                    musicPlayer.loadSong(playingSong);
+                    musicPlayer.updateSongInformation(playingSong);
+                    musicPlayer.updatePlaybackSlider(playingSong);
+                }
             }
         });
         ener.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 panel.setBackground(new Color(255,102,102));
-                addBackButton();
-                ques.setVisible(false);
-                title.setVisible(false);
-                happy.setVisible(false);
-                sad.setVisible(false);
-                calm.setVisible(false);
-                ener.setVisible(false);
-                happyLabel.setVisible(false);
-                sadLabel.setVisible(false);
-                calmLabel.setVisible(false);
-                enerLabel.setVisible(false);
+
+                Visibility.removeMainComponents();
+                Visibility.removeEmoComponents();
+                back.setVisible(true);
+                addComponents();
+
+
+                List<Song> enerSongs = SongLoader.loadSongsFromFolder("src/HarMoody/Energetic songs");
+                PlaylistManager enerList = new PlaylistManager(enerSongs);
+                enerList.shufflePlaylist();
+                currentList = enerList.getPlaylist();
+
+                Song playingSong = currentList.get(0);
+                if (playingSong != null) {
+                    musicPlayer.loadSong(playingSong);
+                    musicPlayer.updateSongInformation(playingSong);
+                }
             }
         });
     }
@@ -100,7 +120,7 @@ public class ButtonAction extends TheHarMoodyGUI{
                 Visibility.removePlaybackComponents();
                 back.setVisible(false);
                 musicPlayer.stopSong();
-                TheHarMoodyGUI.setPlaybackSliderValue(0);
+                musicPlayer.resetPlaybackSlider();
             }
         });
     }

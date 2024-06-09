@@ -45,7 +45,7 @@ public class TheHarMoodyGUI {
         musicPlayer = new MusicPlayer(this);
         createMainGUI();
         addEmoButtonsAndLabels();
-        //addBackButton();
+        addBackButton();
     }
     private void createMainGUI (){
         //frame
