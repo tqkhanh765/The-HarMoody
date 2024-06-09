@@ -23,6 +23,7 @@ public class ButtonAction extends TheHarMoodyGUI{
                 back.setVisible(true);
                 addComponents();
 
+                playbackSlider.setValue(0);
 
                 List<Song> happySongs = SongLoader.loadSongsFromFolder("src/HarMoody/Happy songs");
                 PlaylistManager happyList = new PlaylistManager(happySongs);
@@ -39,13 +40,14 @@ public class ButtonAction extends TheHarMoodyGUI{
         sad.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                panel.setBackground(new Color(51,153,255));
+                panel.setBackground(new Color(204,229,255));
 
                 Visibility.removeMainComponents();
                 Visibility.removeEmoComponents();
                 back.setVisible(true);
                 addComponents();
 
+                playbackSlider.setValue(0);
 
                 List<Song> sadSongs = SongLoader.loadSongsFromFolder("src/HarMoody/Sad songs");
                 PlaylistManager sadList = new PlaylistManager(sadSongs);
@@ -86,7 +88,7 @@ public class ButtonAction extends TheHarMoodyGUI{
         ener.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                panel.setBackground(new Color(255,102,102));
+                panel.setBackground(new Color(255,204,153));
 
                 Visibility.removeMainComponents();
                 Visibility.removeEmoComponents();
@@ -120,7 +122,7 @@ public class ButtonAction extends TheHarMoodyGUI{
                 Visibility.removePlaybackComponents();
                 back.setVisible(false);
                 musicPlayer.stopSong();
-                musicPlayer.resetPlaybackSlider();
+                musicPlayer.resetPlaybackSliderAndCurrentIndex();
             }
         });
     }
@@ -166,10 +168,14 @@ public class ButtonAction extends TheHarMoodyGUI{
         playbackSlider.addMouseListener(new MouseAdapter(){
             @Override
             public void mousePressed(MouseEvent e) {
+                playButton.setVisible(true);
+                pauseButton.setVisible(false);
                 musicPlayer.pauseSong();
             }
             @Override
             public void mouseReleased(MouseEvent e) {
+                playButton.setVisible(false);
+                pauseButton.setVisible(true);
                 JSlider source = (JSlider) e.getSource();
                 int frame = source.getValue();
                 musicPlayer.setCurrentFrame(frame);

@@ -103,6 +103,7 @@ public class MusicPlayer extends PlaybackListener {
                 if (currentPlaylistIndex == playlist.size() - 1){
                     theHarMoodyGUI.playButton.setVisible(true);
                     theHarMoodyGUI.pauseButton.setVisible(false);
+                    currentPlaylistIndex = 0;
                 } else {
                     nextSong();
                 }
@@ -141,12 +142,16 @@ public class MusicPlayer extends PlaybackListener {
             stopSong();
         }
         currentPlaylistIndex++;
+        System.out.println(currentPlaylistIndex);
         currentSong = playlist.get(currentPlaylistIndex);
         currentFrame = 0;
         currentTimeInMilli = 0;
 
         updateSongInformation(currentSong);
         updatePlaybackSlider(currentSong);
+
+        TheHarMoodyGUI.playButton.setVisible(false);
+        TheHarMoodyGUI.pauseButton.setVisible(true);
 
         playCurrentSong();
 
@@ -160,15 +165,21 @@ public class MusicPlayer extends PlaybackListener {
 
         pressedPrev = true;
 
-        stopSong();
+        if (!songFinished) {
+            stopSong();
+        }
 
         currentPlaylistIndex--;
+        System.out.println(currentPlaylistIndex);
         currentSong = playlist.get(currentPlaylistIndex);
         currentFrame = 0;
         currentTimeInMilli = 0;
 
         updateSongInformation(currentSong);
         updatePlaybackSlider(currentSong);
+
+        TheHarMoodyGUI.playButton.setVisible(false);
+        TheHarMoodyGUI.pauseButton.setVisible(true);
 
         playCurrentSong();
 
@@ -179,11 +190,11 @@ public class MusicPlayer extends PlaybackListener {
         TheHarMoodyGUI.playbackSlider.setValue(0);
         System.out.println("Max value: " + TheHarMoodyGUI.playbackSlider.getMaximum());
     }
-    public void resetPlaybackSlider(){
+    public void resetPlaybackSliderAndCurrentIndex(){
         currentFrame = 0;
         currentTimeInMilli = 0;
         TheHarMoodyGUI.playbackSlider.setValue(0);
-        songFinished = false;
+        currentPlaylistIndex = 0;
     }
     private void startPlaybackSliderThread(){
         new Thread(new Runnable() {
