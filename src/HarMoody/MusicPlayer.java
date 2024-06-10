@@ -3,17 +3,11 @@ package HarMoody;
 import javazoom.jl.player.advanced.AdvancedPlayer;
 import javazoom.jl.player.advanced.PlaybackEvent;
 import javazoom.jl.player.advanced.PlaybackListener;
-
-import javax.swing.*;
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class MusicPlayer extends PlaybackListener {
     private TheHarMoodyGUI theHarMoodyGUI;
@@ -28,7 +22,6 @@ public class MusicPlayer extends PlaybackListener {
     private int currentTimeInMilli;
     private int currentPlaylistIndex;
     private List<Song> playlist;
-    private Set<String> playedSongs = new HashSet<>();
     public MusicPlayer(TheHarMoodyGUI theHarMoodyGUI){
         this.theHarMoodyGUI = theHarMoodyGUI;
     }
@@ -123,13 +116,6 @@ public class MusicPlayer extends PlaybackListener {
             advancedPlayer.close();
             advancedPlayer = null;
         }
-    }
-    private void playSong(Song songFile) {
-        currentSong = new Song(songFile.getFilePath(), songFile.getImagePath());
-        currentTimeInMilli = 0;
-        isPaused = false;
-        startPlaybackSliderThread();
-        //loadSong(currentSong);
     }
     public void nextSong(){
         if (playlist == null) return;

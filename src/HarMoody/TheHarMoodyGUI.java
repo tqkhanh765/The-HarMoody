@@ -208,6 +208,7 @@ public class TheHarMoodyGUI {
         prevButton = new JButton(LoadImage.loadImage("src/HarMoody/Images/prev 2.png"));
         prevButton.setBorderPainted(false);
         prevButton.setBackground(null);
+        prevButton.setFocusable(false);
         playbackButtons.add(prevButton);
 
         //play button
@@ -215,6 +216,7 @@ public class TheHarMoodyGUI {
         playButton.setBorderPainted(false);
         playButton.setBackground(null);
         playButton.setVisible(false);
+        playButton.setFocusable(false);
         playbackButtons.add(playButton);
 
 
@@ -222,12 +224,14 @@ public class TheHarMoodyGUI {
         pauseButton = new JButton(LoadImage.loadImage("src/HarMoody/Images/pause 3.png"));
         pauseButton.setBorderPainted(false);
         pauseButton.setBackground(null);
+        pauseButton.setFocusable(false);
         playbackButtons.add(pauseButton);
 
         //next button
         nextButton = new JButton(LoadImage.loadImage("src/HarMoody/Images/next 2.png"));
         nextButton.setBorderPainted(false);
         nextButton.setBackground(null);
+        nextButton.setFocusable(false);
         playbackButtons.add(nextButton);
 
         ButtonAction.addPlaybackButtonsAction();
